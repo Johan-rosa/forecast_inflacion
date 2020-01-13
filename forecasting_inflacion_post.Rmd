@@ -3,11 +3,22 @@ title: "Múltiples modelos: prónosticando la Inflación de RD"
 output: html_notebook
 ---
 
-El Banco Central de la República Dominicana opera bajo un esquema de metas de inflación, en el que establece una meta explícita durante un horizonte de política determinado y se compromete a tomar desiciones que conduzcan a la consecusión del objetivo. Esta estrategia genera certidumbre en los agentes económicos
+El Banco Central de la República Dominicana opera bajo un esquema de metas de inflación, en el que establece una meta explícita durante un horizonte de política determinado y se compromete a tomar desiciones que lleven a la consecusión del objetivo. Esta estrategia genera certidumbre en los agentes económicos y ha resultado ser unos de los pilares de la estabilidad macroeconómica del país en los últimos años.
 
-En República Dominicana la varaible principal para el diseño de la política monetaria es la inflación ya que desde el 2012 el país adoptó un esquema de meta de inflación, en el que se establencen metas cuantitativas para un horizonte de política específico. Actualmente la meta es de 4.0% +/- 1.0% y es labor del Banco Central análizar las variables macroeconómicas y definir una postura de política partiendo de una evaluación adecuada de los pronóticos de iflación y vinculación con la meta.
+La adopción de este esquema de política por parte de las autoridades monetarias hace de la inflación una variable interesante, alrededor de la cual existe todo un sistema de proyecciones. Por esto quise utilizarla para explicar algunos temas que desde hace un tiempo he querido compartir y de paso aportar enfoques novedos para el manejo de múltiples modelos con R.
 
-De antemano quiero dejar claro que el resultado de este ejercicio, aunque presenta proyecciones válidas de la inflación, no es necesariamente congruente con las proyecciones que evalúa el BCRD para el diseño de la política monetaria. Esto es simplemente un ejercico para comparitr un enfoque para majerar multiples modelos en R. De queres acceder a la proyecciones de inflación del Banco Centra lo ideal es consulta el Informe de Política Monetaria y los comunicados de política que publica la institución. 
+El objetivo del ejercicio será generar proyecciones de la inflación utilizando dos enfoques de pronóstico:
+
+* Proyección general 
+* Agregación de pronónstiocos 
+
+En el primer enfoque la idea es aplicar varias metodologías autoregresivas a la inflación general, terminando con una serie y multiples modelos. 
+
+El segundo enfoque cosiste en la agregación ponderada de las poryecciones de los grupos de artículos que componen la canasta del índice, de manera que tendrémos multiples series y múltiples modelos.
+
+Esta publicación se enfoca principalmetne en la estrategía de porgramación para la reacización de la tarea propuesta. Los aspectos metodológicos de los modelos utilizados nos era muy detallada, aunque habrá referencias metodologicas de publicaciones anteriores en este espacio o en fuentes alternativas. Por otro lado, los aspectos relacionados a la evaluación y seleción de modelos quedará pendiente para otra publicación por cuentiones de volumen. 
+
+Para concluir con esta introdución,  es importante aclarar que el resultado de este ejercicio, aunque presenta proyecciones válidas de la inflación, no es necesariamente congruente con las proyecciones que evalúa el BCRD para el diseño de la política monetaria. Esto es simplemente un ejercico para comparitr un enfoque para majerar multiples modelos en R. De queres acceder a la proyecciones de inflación del Banco Centra lo ideal es consultar el [Informe de Política Monetaria](https://bancentral.gov.do/Publicaciones/Consulta?CategoryId=93) y y el [Programa Monetario y Financiero](https://www.bancentral.gov.do/a/d/2577-programa-monetario) que publica la institución. 
 
 
 ## Visualizando la inflación
@@ -35,4 +46,16 @@ ipc_articulos %>%
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45))
 ```
+
+
+
+
+# Posibles textos 
+
+##  Introducción 
+
+En República Dominicana la varaible principal para el diseño de la política monetaria es la inflación ya que desde el 2012 el país adoptó un esquema de meta de inflación, en el que se establencen metas cuantitativas para un horizonte de política específico. Actualmente la meta es de 4.0% +/- 1.0% y es labor del Banco Central análizar las variables macroeconómicas y definir una postura de política partiendo de una evaluación adecuada de los pronóticos de iflación y vinculación con la meta.
+
+y por esto existe un sistema de proyecciones dedicado simplemente para determinar el rumbo que tendrá la inflación en base a las tendencias inflacionarias coyunturales y las variables del contexto macroeconómico doméstico y externo. 
+
 
