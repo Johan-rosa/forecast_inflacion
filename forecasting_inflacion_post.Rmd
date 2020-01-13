@@ -9,3 +9,30 @@ En República Dominicana la varaible principal para el diseño de la política m
 
 De antemano quiero dejar claro que el resultado de este ejercicio, aunque presenta proyecciones válidas de la inflación, no es necesariamente congruente con las proyecciones que evalúa el BCRD para el diseño de la política monetaria. Esto es simplemente un ejercico para comparitr un enfoque para majerar multiples modelos en R. De queres acceder a la proyecciones de inflación del Banco Centra lo ideal es consulta el Informe de Política Monetaria y los comunicados de política que publica la institución. 
 
+
+## Visualizando la inflación
+```{r}
+ipc_articulos %>%
+    ungroup() %>%
+    filter(division == "Grupo" | nombre == "Indice General") %>%
+    mutate(nombre = str_wrap(nombre, width = 25)) %>%
+    ggplot(aes(x = mes, y = indice, color = nombre)) +
+    geom_line(show.legend = FALSE) +
+    facet_wrap(~nombre, scales = "free_y") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45)) +
+    scale_y_continuous(breaks = )
+```
+
+```{r message=FALSE, warning=FALSE}
+ipc_articulos %>%
+    ungroup() %>%
+    filter(division == "Grupo" | nombre == "Indice General") %>%
+    mutate(nombre = str_wrap(nombre, width = 25)) %>%
+    ggplot(aes(x = mes, y = variacion_mes * 100, color = nombre)) +
+    geom_line(show.legend = FALSE) +
+    facet_wrap(~nombre, scales = "free_y") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45))
+```
+
