@@ -1,0 +1,11 @@
+---
+title: "Múltiples modelos: prónosticando la Inflación de RD"
+output: html_notebook
+---
+
+El Banco Central de la República Dominicana opera bajo un esquema de metas de inflación, en el que establece una meta explícita durante un horizonte de política determinado y se compromete a tomar desiciones que conduzcan a la consecusión del objetivo. Esta estrategia genera certidumbre en los agentes económicos
+
+En República Dominicana la varaible principal para el diseño de la política monetaria es la inflación ya que desde el 2012 el país adoptó un esquema de meta de inflación, en el que se establencen metas cuantitativas para un horizonte de política específico. Actualmente la meta es de 4.0% +/- 1.0% y es labor del Banco Central análizar las variables macroeconómicas y definir una postura de política partiendo de una evaluación adecuada de los pronóticos de iflación y vinculación con la meta.
+
+De antemano quiero dejar claro que el resultado de este ejercicio, aunque presenta proyecciones válidas de la inflación, no es necesariamente congruente con las proyecciones que evalúa el BCRD para el diseño de la política monetaria. Esto es simplemente un ejercico para comparitr un enfoque para majerar multiples modelos en R. De queres acceder a la proyecciones de inflación del Banco Centra lo ideal es consulta el Informe de Política Monetaria y los comunicados de política que publica la institución. 
+
