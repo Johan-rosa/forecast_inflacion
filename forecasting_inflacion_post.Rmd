@@ -14,43 +14,134 @@ El objetivo del ejercicio será generar proyecciones de la inflación utilizando
 
 En el primer enfoque la idea es aplicar varias metodologías autoregresivas a la inflación general, terminando con una serie y multiples modelos. 
 
-El segundo enfoque cosiste en la agregación ponderada de las poryecciones de los grupos de artículos que componen la canasta del índice, de manera que tendrémos multiples series y múltiples modelos.
+El segundo enfoque cosiste en la agregación ponderada de las poryecciones de los grupos de artículos que componen la canasta del índice, de manera que **tendrémos** multiples series y múltiples modelos.
 
-Esta publicación se enfoca principalmetne en la estrategía de porgramación para la reacización de la tarea propuesta. Los aspectos metodológicos de los modelos utilizados nos era muy detallada, aunque habrá referencias metodologicas de publicaciones anteriores en este espacio o en fuentes alternativas. Por otro lado, los aspectos relacionados a la evaluación y seleción de modelos quedará pendiente para otra publicación por cuentiones de volumen. 
+Esta publicación se enfoca principalmetne en la estrategía de porgramación para la realización de la tarea propuesta. Los aspectos metodológicos de los modelos utilizados nos será muy detallada, aunque habrá referencias metodologicas de publicaciones anteriores en este espacio o en fuentes alternativas. Por otro lado, los aspectos relacionados a la evaluación y seleción de modelos quedará pendiente para otra publicación por cuentiones de volumen. 
 
-Para concluir con esta introdución,  es importante aclarar que el resultado de este ejercicio, aunque presenta proyecciones válidas de la inflación, no es necesariamente congruente con las proyecciones que evalúa el BCRD para el diseño de la política monetaria. Esto es simplemente un ejercico para comparitr un enfoque para majerar multiples modelos en R. De queres acceder a la proyecciones de inflación del Banco Centra lo ideal es consultar el [Informe de Política Monetaria](https://bancentral.gov.do/Publicaciones/Consulta?CategoryId=93) y y el [Programa Monetario y Financiero](https://www.bancentral.gov.do/a/d/2577-programa-monetario) que publica la institución. 
+Para concluir con la introdución,  es importante aclarar que el resultado de este ejercicio, aunque presenta proyecciones válidas de la inflación, no es necesariamente congruente con las proyecciones que evalúa el BCRD para el diseño de la política monetaria. Esto es simplemente un ejercico para comparitr un enfoque para majerar multiples modelos en R. De queres acceder a la proyecciones de inflación del Banco Centra lo ideal es consultar el [Informe de Política Monetaria](https://bancentral.gov.do/Publicaciones/Consulta?CategoryId=93) y el [Programa Monetario y Financiero](https://www.bancentral.gov.do/a/d/2577-programa-monetario) que publica la institución. 
 
+## Los datos 
+
+Esta vez **utilizaremos** un set de datos que he construído con las informaciones que publica el Banco Central. Pueden acceder al objetos RDS desde el [repositorio en github](https://github.com/Johan-rosa/forecast_inflacion) de este post.
+
+La base de datos tiene 9 variables, entre las que se encuentran el nombre del rubro de la canasta, los diferentes niveles de agregación de la canasta, las ponderaciones, la fecha, y las variaciones mensuales e interanuales. 
+
+```{r}
+glimpse(ipc_articulos, 70)
+```
+
+La primera transformación a realizar será filtrar las observaciones correspondientes al IPC general y las series de los diferentes grupos de bienes y servicios. Aunque lo ideal sería probar la agregación de pronósticos desde el nivel más bajo (artículos), hacerlo a nivel de grupos puede que tenga mejores ventajas pedagógicas, porque al ser 12 grupos se pueden visualizar fácilmente los resultados. Aprovenchando esta manipulación, resulta conveniente crear un factor con el nombre de los grupos, de esta manera se logra que el ipc general quede de primero en todas las visualizaciones. 
+
+Para crear el factor del nombre se pueden utilizar las funciones `forcats::fct_inorder()` que crea factores y organiza los niveles en orden de aparición, conveniente aquí porque el ipc general aparece de primero. Por otro lado, también está `forcats::fct_reorder()` que recibe un factor y una variable de organización como argumento. De usar esta segunda opción la variable poderador serviría para organizar los factores y lograr el objetivo.
+
+```{r}
+ipc_grupos <- ipc_articulos %>%
+    ungroup() %>%
+    filter(
+        division == "Grupo" | nombre == "Indice General") %>%
+    mutate(
+        nombre = str_wrap(nombre, width = 25),
+        nombre = fct_inorder(nombre)
+        )
+    
+```
 
 ## Visualizando la inflación
+
+Es válido detallar aquí que la estretegia de forecasting a utilizar consistirá en proyectar las variaciones mensuales del ipc general y de los diferentes grupos y con estas recuperar el IPC implicito para cada período. La inclinación por este procedimiento obdece a la evidencia empírica de que esta forma conyeva a menores errores de pronóstico que, por ejemplo, proyectar las diferencias logaritmicas de los índices. 
+
+El gráfico siguiente muestra los índices para el IPC general y los distintos grupos de la canasta. Con facilidad se puede apreciar las tendencias de cada uno, entre las que se destaca Alimentos y Bebidas no Alcohólicas, Bebidas Alcohólicas y Tabaco, Educación y Salud por acumular el mayor incremento desde el año base. Por otro lado, prendas de vestir traza una tendencia negativa muy peculiar. 
+
 ```{r}
-ipc_articulos %>%
-    ungroup() %>%
-    filter(division == "Grupo" | nombre == "Indice General") %>%
-    mutate(nombre = str_wrap(nombre, width = 25)) %>%
+ipc_grupos %>%
     ggplot(aes(x = mes, y = indice, color = nombre)) +
     geom_line(show.legend = FALSE) +
     facet_wrap(~nombre, scales = "free_y") +
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45)) +
-    scale_y_continuous(breaks = )
+    scale_y_continuous(breaks = ) +
+    labs(
+        x = "",
+        y = "índice"
+    )
 ```
 
 ```{r message=FALSE, warning=FALSE}
-ipc_articulos %>%
-    ungroup() %>%
-    filter(division == "Grupo" | nombre == "Indice General") %>%
-    mutate(nombre = str_wrap(nombre, width = 25)) %>%
+ipc_grupos %>%
     ggplot(aes(x = mes, y = variacion_mes * 100, color = nombre)) +
     geom_line(show.legend = FALSE) +
     facet_wrap(~nombre, scales = "free_y") +
     theme_minimal() +
-    theme(axis.text.x = element_text(angle = 45))
+    theme(axis.text.x = element_text(angle = 45))  +
+    labs(
+        x = "",
+        y = "Variación mensual"
+    )
 ```
 
+## Generando las proyecciones
+
+Para la realización de este ejercicio se tomó en consideración el enfoque utilizado por Hadley Wickham y Garrett Grolemund en el [capítulo 25](https://r4ds.had.co.nz/many-models.html) del libro [R for data science](https://r4ds.had.co.nz/). Aunque se ellos realizaron algo muy distinto a esto, en general en ese capitulo los autores muestran como aprovechar las ventajas de los data frame anidados (capacidad de tener listas de objetos como columnas de un data frame) en combinación con las herramientas del paquete `purrr` para la realización de operaciones iterativas. 
+
+Así, los pasos a dar para proyectar la inflación son los siguientes
+
+1. Anidar el data frame agrupado por el nombre del grupo, para tener series "separadas".
+2. Agregar una columna con la transformación del las series a objetos de serie de tiempo.
+3. Agregar una columna con los modelos que le serán aplicados a cada serie
+4. Estimar el modelo para cada serie usando los objetos anteriores
+5. Realizar un forecast de 6 meses de cada rubro
+6. Recuperar el índice implicito dada la proyecciones de las variaciones mensuales
+
+
+### Paso 1
+
+La función `tidyr::nest()` permite anidar un dataframe en base a grupos. Este tipo de objeto facilita la tarea de aplicar acciones as bubgrupos de datos, mejorando la manipulación de los resultados y evitando la duplicidad de códigos. 
+
+Para ilustrar un poco el concepto, una forma rápidad de realizar el ejercicio sería hacer todos los pasos para uno de los grupos del IPC y copiar el código y pegarlo tantas veces como grupos hay, o bien hacer un loop usando los nombres de los grupos y aplicar la serie de pasos a todos en una sola ejecución. Pero hacer esto conllevaría, en el caso uno a la creación de muchos objetos y, en el caso dos, a la creación de varias listas de objetos (Complicados de manipular). 
+
+El procedimiento usando un data frame anidado ayuda al manejo de los diferentes objetos que deben ser creados al mantenerlos en una estructura de filas y columnas. En esta estructura cada fila corresponde a uno de los grupos y las columnnas pueden contener básicamente cualquier cosas, preferiblemente cosas relacionadas al grupo en cuestión o bien resultados de usar la data del grupo.
+
+```{r}
+by_grupos <- ipc_grupos %>%
+    group_by(nombre, ponderador) %>%
+    nest() 
+
+head(by_grupos)
+```
+
+En el objeto `by_grupo`, la fila 1 de la columna `data` tiene la serie del índice general. 
+
+```{r message=FALSE, warning=FALSE}
+by_grupos %>%
+    slice(1) %>%
+    unnest(data) %>%
+    head()
+```
+
+### Paso 2
+
+El segundo paso es crear objetos `ts` con dada uno de los elementos de la columna `data`. Para hacer esto se utiliza alguna función que itere sobre los elementos de `data` y devuelva una lista con las series de tiempo. Las funciones de `purrr` cumplirán dicha tarea.
+
+Con el siguiente código se añade la columnan ts que almacena un objeto ts para cada grupo.
+
+```{r}
+by_grupos %>%
+    mutate(
+        ts = map(
+            data,
+            ~.x %>%
+                select(variacion_mes) %>%
+                ts(frequency = 12, start = c(2011, 01))
+        )
+    )
+```
+
+###  Paso tres 
 
 
 
-# Posibles textos 
+
+# El cementerio 
 
 ##  Introducción 
 
