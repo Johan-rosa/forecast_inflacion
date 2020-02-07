@@ -1,6 +1,0 @@
----
-title: "README"
-output: html_document
----
-
-Ejercicio de pronóstico de la Infalción de República Dominicana. 
